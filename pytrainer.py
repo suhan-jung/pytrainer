@@ -87,7 +87,7 @@ class CpEvent:
 
     # PLUS 로 부터 실제로 시세를 수신 받는 이벤트 핸들러
     def OnReceived(self):
-        if self.name == "stockcur":
+        if self.name == "futurecur":
             # 현재가 체결 데이터 실시간 업데이트
             self.rpMst.exFlag = self.client.GetHeaderValue(19)  # 예상체결 플래그
             code = self.client.GetHeaderValue(0)
@@ -113,12 +113,12 @@ class CpEvent:
 
             return
 
-        elif self.name == "stockbid":
+        elif self.name == "futurebid":
             # 현재가 10차 호가 데이터 실시간 업데이c
             code = self.client.GetHeaderValue(0)
             dataindex = [3, 7, 11, 15, 19, 27, 31, 35, 39, 43]
             obi = 0
-            for i in range(10):
+            for i in range(5):
                 self.rpMst.offer[i] = self.client.GetHeaderValue(dataindex[i])
                 self.rpMst.bid[i] = self.client.GetHeaderValue(dataindex[i] + 1)
                 self.rpMst.offervol[i] = self.client.GetHeaderValue(dataindex[i] + 2)
@@ -157,12 +157,12 @@ class CpPublish:
 # CpPBStockCur: 실시간 현재가 요청 클래스
 class CpPBStockCur(CpPublish):
     def __init__(self):
-        super().__init__("stockcur", "DsCbo1.StockCur")
+        super().__init__("futurecur", "DsCbo1.FutureCurOnly")
 
 # CpPBStockBid: 실시간 10차 호가 요청 클래스
 class CpPBStockBid(CpPublish):
     def __init__(self):
-        super().__init__("stockbid", "Dscbo1.StockJpBid")
+        super().__init__("futurebid", "CpSysDib.FutureJpBid")
 
 
 # SB/PB 요청 ROOT 클래스
@@ -179,7 +179,7 @@ class CpRPCurrentPrice:
         if (g_objCpStatus.IsConnect == 0):
             print("PLUS가 정상적으로 연결되지 않음. ")
             return
-        self.objStockMst = win32com.client.Dispatch("DsCbo1.StockMst")
+        self.objStockMst = win32com.client.Dispatch("Dscbo1.FutureMst")
         return
 
 
@@ -212,7 +212,7 @@ class CpRPCurrentPrice:
 
 
         # 10차호가
-        for i in range(10):
+        for i in range(5):
             rtMst.offer[i] = (self.objStockMst.GetDataValue(0, i))  # 매도호가
             rtMst.bid[i] = (self.objStockMst.GetDataValue(1, i) ) # 매수호가
             rtMst.offervol[i] = (self.objStockMst.GetDataValue(2, i))  # 매도호가 잔량
@@ -280,44 +280,52 @@ class WindowClass(QMainWindow) :
         self.displyHoga()
 
     def displyHoga(self):
+        '''
         self.ui.label_offer10.setText(format(self.item.offer[9],','))
         self.ui.label_offer9.setText(format(self.item.offer[8],','))
         self.ui.label_offer8.setText(format(self.item.offer[7],','))
         self.ui.label_offer7.setText(format(self.item.offer[6],','))
         self.ui.label_offer6.setText(format(self.item.offer[5],','))
+        '''
         self.ui.label_offer5.setText(format(self.item.offer[4],','))
         self.ui.label_offer4.setText(format(self.item.offer[3],','))
         self.ui.label_offer3.setText(format(self.item.offer[2],','))
         self.ui.label_offer2.setText(format(self.item.offer[1],','))
         self.ui.label_offer1.setText(format(self.item.offer[0],','))
 
+        '''
         self.ui.label_offer_v10.setText(format(self.item.offervol[9],','))
         self.ui.label_offer_v9.setText(format(self.item.offervol[8],','))
         self.ui.label_offer_v8.setText(format(self.item.offervol[7],','))
         self.ui.label_offer_v7.setText(format(self.item.offervol[6],','))
         self.ui.label_offer_v6.setText(format(self.item.offervol[5],','))
+        '''
         self.ui.label_offer_v5.setText(format(self.item.offervol[4],','))
         self.ui.label_offer_v4.setText(format(self.item.offervol[3],','))
         self.ui.label_offer_v3.setText(format(self.item.offervol[2],','))
         self.ui.label_offer_v2.setText(format(self.item.offervol[1],','))
         self.ui.label_offer_v1.setText(format(self.item.offervol[0],','))
 
+        '''
         self.ui.label_bid10.setText(format(self.item.bid[9],','))
         self.ui.label_bid9.setText(format(self.item.bid[8],','))
         self.ui.label_bid8.setText(format(self.item.bid[7],','))
         self.ui.label_bid7.setText(format(self.item.bid[6],','))
         self.ui.label_bid6.setText(format(self.item.bid[5],','))
+        '''
         self.ui.label_bid5.setText(format(self.item.bid[4],','))
         self.ui.label_bid4.setText(format(self.item.bid[3],','))
         self.ui.label_bid3.setText(format(self.item.bid[2],','))
         self.ui.label_bid2.setText(format(self.item.bid[1],','))
         self.ui.label_bid1.setText(format(self.item.bid[0],','))
 
+        '''
         self.ui.label_bid_v10.setText(format(self.item.bidvol[9],','))
         self.ui.label_bid_v9.setText(format(self.item.bidvol[8],','))
         self.ui.label_bid_v8.setText(format(self.item.bidvol[7],','))
         self.ui.label_bid_v7.setText(format(self.item.bidvol[6],','))
         self.ui.label_bid_v6.setText(format(self.item.bidvol[5],','))
+        '''
         self.ui.label_bid_v5.setText(format(self.item.bidvol[4],','))
         self.ui.label_bid_v4.setText(format(self.item.bidvol[3],','))
         self.ui.label_bid_v3.setText(format(self.item.bidvol[2],','))

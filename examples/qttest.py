@@ -72,8 +72,8 @@ class CpStockMst:
         print("코드 이름 시간 현재가 대비 시가 고가 저가 매도호가 매수호가 거래량 거래대금")
         print(code, name, time, cprice, diff, open, high, low, offer, bid, vol, vol_value)
         return True
- 
- 
+
+
 class MyWindow(QMainWindow):
  
     def __init__(self):
