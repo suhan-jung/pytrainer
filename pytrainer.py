@@ -18,10 +18,10 @@ class stockPricedData:
         self.cur = 0        # 현재가
         self.diff = 0       # 대비
         self.diffp = 0      # 대비율
-        self.offer = [0 for _ in range(10)]     # 매도호가
-        self.bid = [0 for _ in range(10)]       # 매수호가
-        self.offervol = [0 for _ in range(10)]     # 매도호가 잔량
-        self.bidvol = [0 for _ in range(10)]       # 매수호가 잔량
+        self.offer = [0 for _ in range(5)]     # 매도호가
+        self.bid = [0 for _ in range(5)]       # 매수호가
+        self.offervol = [0 for _ in range(5)]     # 매도호가 잔량
+        self.bidvol = [0 for _ in range(5)]       # 매수호가 잔량
         self.totOffer = 0       # 총매도잔량
         self.totBid = 0         # 총매수 잔량
         self.vol = 0            # 거래량
@@ -44,7 +44,7 @@ class stockPricedData:
     # 전일 대비 계산
     def makediffp(self):
         lastday = 0
-        if (self.exFlag == ord('1')):  # 동시호가 시간 (예상체결)
+        if (self.exFlag != 40):  # 동시호가 시간 (예상체결)
             if self.baseprice > 0  :
                 lastday = self.baseprice
             else:
@@ -65,7 +65,7 @@ class stockPricedData:
 
     def getCurColor(self):
         diff = self.diff
-        if (self.exFlag == ord('1')):  # 동시호가 시간 (예상체결)
+        if (self.exFlag != 40):  # 동시호가 시간 (예상체결)
             diff = self.expdiff
         if (diff > 0):
             return 'color: red'
@@ -89,14 +89,14 @@ class CpEvent:
     def OnReceived(self):
         if self.name == "futurecur":
             # 현재가 체결 데이터 실시간 업데이트
-            self.rpMst.exFlag = self.client.GetHeaderValue(19)  # 예상체결 플래그
+            self.rpMst.exFlag = self.client.GetHeaderValue(28)  # 예상체결 플래그
             code = self.client.GetHeaderValue(0)
             diff = self.client.GetHeaderValue(2)
-            cur= self.client.GetHeaderValue(13)  # 현재가
-            vol = self.client.GetHeaderValue(9)  # 거래량
+            cur= self.client.GetHeaderValue(1)  # 현재가
+            vol = self.client.GetHeaderValue(13)  # 거래량
 
             # 예제는 장중만 처리 함.
-            if (self.rpMst.exFlag == ord('1')):  # 동시호가 시간 (예상체결)
+            if (self.rpMst.exFlag != 40):  # 동시호가 시간 (예상체결)
                 # 예상체결가 정보
                 self.rpMst.expcur = cur
                 self.rpMst.expdiff = diff
@@ -116,16 +116,16 @@ class CpEvent:
         elif self.name == "futurebid":
             # 현재가 10차 호가 데이터 실시간 업데이c
             code = self.client.GetHeaderValue(0)
-            dataindex = [3, 7, 11, 15, 19, 27, 31, 35, 39, 43]
+            dataindex = [2, 7, 11, 15, 19, 27, 31, 35, 39, 43]
             obi = 0
             for i in range(5):
-                self.rpMst.offer[i] = self.client.GetHeaderValue(dataindex[i])
-                self.rpMst.bid[i] = self.client.GetHeaderValue(dataindex[i] + 1)
-                self.rpMst.offervol[i] = self.client.GetHeaderValue(dataindex[i] + 2)
-                self.rpMst.bidvol[i] = self.client.GetHeaderValue(dataindex[i] + 3)
+                self.rpMst.offer[i] = self.client.GetHeaderValue(i+2)
+                self.rpMst.bid[i] = self.client.GetHeaderValue(i+19)
+                self.rpMst.offervol[i] = self.client.GetHeaderValue(i+7)
+                self.rpMst.bidvol[i] = self.client.GetHeaderValue(i+24)
 
-            self.rpMst.totOffer = self.client.GetHeaderValue(23)
-            self.rpMst.totBid = self.client.GetHeaderValue(24)
+            self.rpMst.totOffer = self.client.GetHeaderValue(12)
+            self.rpMst.totBid = self.client.GetHeaderValue(29)
             # 10차 호가 변경 call back 함수 호출
             self.parent.monitorOfferbidChange()
             return
@@ -198,25 +198,25 @@ class CpRPCurrentPrice:
         # 수신 받은 현재가 정보를 rtMst 에 저장
         rtMst.code = code
         rtMst.name = g_objCodeMgr.CodeToName(code)
-        rtMst.cur =  self.objStockMst.GetHeaderValue(11)  # 종가
-        rtMst.diff =  self.objStockMst.GetHeaderValue(12)  # 전일대비
-        rtMst.baseprice  =  self.objStockMst.GetHeaderValue(27)  # 기준가
-        rtMst.vol = self.objStockMst.GetHeaderValue(18)  # 거래량
-        rtMst.exFlag = self.objStockMst.GetHeaderValue(58)  # 예상플래그
-        rtMst.expcur = self.objStockMst.GetHeaderValue(55)  # 예상체결가
-        rtMst.expdiff = self.objStockMst.GetHeaderValue(56)  # 예상체결대비
+        rtMst.cur = self.objStockMst.GetHeaderValue(22)  # 전일종가 11
+        rtMst.diff = self.objStockMst.GetHeaderValue(77)  # 전일대비 12
+        rtMst.baseprice = self.objStockMst.GetHeaderValue(13)  # 기준가 27
+        rtMst.vol = self.objStockMst.GetHeaderValue(75)  # 거래량 18
+        rtMst.exFlag = self.objStockMst.GetHeaderValue(115)  # 예상플래그 58
+        rtMst.expcur = self.objStockMst.GetHeaderValue(113)  # 예상체결가 55
+        rtMst.expdiff = self.objStockMst.GetHeaderValue(114)  # 예상체결대비 56
         rtMst.makediffp()
 
-        rtMst.totOffer = self.objStockMst.GetHeaderValue(71)  # 총매도잔량
-        rtMst.totBid = self.objStockMst.GetHeaderValue(73)  # 총매수잔량
+        rtMst.totOffer = self.objStockMst.GetHeaderValue(47)  # 총매도잔량 71
+        rtMst.totBid = self.objStockMst.GetHeaderValue(64)  # 총매수잔량 73
 
 
         # 10차호가
         for i in range(5):
-            rtMst.offer[i] = (self.objStockMst.GetDataValue(0, i))  # 매도호가
-            rtMst.bid[i] = (self.objStockMst.GetDataValue(1, i) ) # 매수호가
-            rtMst.offervol[i] = (self.objStockMst.GetDataValue(2, i))  # 매도호가 잔량
-            rtMst.bidvol[i] = (self.objStockMst.GetDataValue(3, i) ) # 매수호가 잔량
+            rtMst.offer[i] = (self.objStockMst.GetHeaderValue(i+37))  # 매도호가
+            rtMst.bid[i] = (self.objStockMst.GetHeaderValue(i+54) ) # 매수호가
+            rtMst.offervol[i] = (self.objStockMst.GetHeaderValue(i+42))  # 매도호가 잔량
+            rtMst.bidvol[i] = (self.objStockMst.GetHeaderValue(i+59) ) # 매수호가 잔량
 
 
         rtMst.objCur.Subscribe(code,rtMst, callbackobj)
@@ -235,7 +235,7 @@ class WindowClass(QMainWindow) :
         self.objMst = CpRPCurrentPrice()
         self.item = stockPricedData()
 
-        self.setCode("000660")
+        self.setCode("101Q6")
 
     @pyqtSlot()
     def slot_codeupdate(self):
@@ -261,12 +261,12 @@ class WindowClass(QMainWindow) :
         self.displyHoga()
 
     def setCode(self, code):
-        if len(code) < 6 :
+        if len(code) < 5 :
             return
 
         print(code)
-        if not (code[0] == "A"):
-            code = "A" + code
+        #if not (code[0] == "A"):
+        #    code = "A" + code
 
         name = g_objCodeMgr.CodeToName(code)
         if len(name) == 0:
@@ -281,24 +281,24 @@ class WindowClass(QMainWindow) :
 
     def displyHoga(self):
         '''
-        self.ui.label_offer10.setText(format(self.item.offer[9],','))
-        self.ui.label_offer9.setText(format(self.item.offer[8],','))
-        self.ui.label_offer8.setText(format(self.item.offer[7],','))
-        self.ui.label_offer7.setText(format(self.item.offer[6],','))
-        self.ui.label_offer6.setText(format(self.item.offer[5],','))
+        self.ui.label_offer10.setText(format(self.item.offer[9],'03.2f'))
+        self.ui.label_offer9.setText(format(self.item.offer[8],'03.2f'))
+        self.ui.label_offer8.setText(format(self.item.offer[7],'03.2f'))
+        self.ui.label_offer7.setText(format(self.item.offer[6],'03.2f'))
+        self.ui.label_offer6.setText(format(self.item.offer[5],'03.2f'))
         '''
-        self.ui.label_offer5.setText(format(self.item.offer[4],','))
-        self.ui.label_offer4.setText(format(self.item.offer[3],','))
-        self.ui.label_offer3.setText(format(self.item.offer[2],','))
-        self.ui.label_offer2.setText(format(self.item.offer[1],','))
-        self.ui.label_offer1.setText(format(self.item.offer[0],','))
+        self.ui.label_offer5.setText(format(self.item.offer[4],'03.2f'))
+        self.ui.label_offer4.setText(format(self.item.offer[3],'03.2f'))
+        self.ui.label_offer3.setText(format(self.item.offer[2],'03.2f'))
+        self.ui.label_offer2.setText(format(self.item.offer[1],'03.2f'))
+        self.ui.label_offer1.setText(format(self.item.offer[0],'03.2f'))
 
         '''
-        self.ui.label_offer_v10.setText(format(self.item.offervol[9],','))
-        self.ui.label_offer_v9.setText(format(self.item.offervol[8],','))
-        self.ui.label_offer_v8.setText(format(self.item.offervol[7],','))
-        self.ui.label_offer_v7.setText(format(self.item.offervol[6],','))
-        self.ui.label_offer_v6.setText(format(self.item.offervol[5],','))
+        self.ui.label_offer_v10.setText(format(self.item.offervol[9],'03.2f'))
+        self.ui.label_offer_v9.setText(format(self.item.offervol[8],'03.2f'))
+        self.ui.label_offer_v8.setText(format(self.item.offervol[7],'03.2f'))
+        self.ui.label_offer_v7.setText(format(self.item.offervol[6],'03.2f'))
+        self.ui.label_offer_v6.setText(format(self.item.offervol[5],'03.2f'))
         '''
         self.ui.label_offer_v5.setText(format(self.item.offervol[4],','))
         self.ui.label_offer_v4.setText(format(self.item.offervol[3],','))
@@ -307,24 +307,24 @@ class WindowClass(QMainWindow) :
         self.ui.label_offer_v1.setText(format(self.item.offervol[0],','))
 
         '''
-        self.ui.label_bid10.setText(format(self.item.bid[9],','))
-        self.ui.label_bid9.setText(format(self.item.bid[8],','))
-        self.ui.label_bid8.setText(format(self.item.bid[7],','))
-        self.ui.label_bid7.setText(format(self.item.bid[6],','))
-        self.ui.label_bid6.setText(format(self.item.bid[5],','))
+        self.ui.label_bid10.setText(format(self.item.bid[9],'03.2f'))
+        self.ui.label_bid9.setText(format(self.item.bid[8],'03.2f'))
+        self.ui.label_bid8.setText(format(self.item.bid[7],'03.2f'))
+        self.ui.label_bid7.setText(format(self.item.bid[6],'03.2f'))
+        self.ui.label_bid6.setText(format(self.item.bid[5],'03.2f'))
         '''
-        self.ui.label_bid5.setText(format(self.item.bid[4],','))
-        self.ui.label_bid4.setText(format(self.item.bid[3],','))
-        self.ui.label_bid3.setText(format(self.item.bid[2],','))
-        self.ui.label_bid2.setText(format(self.item.bid[1],','))
-        self.ui.label_bid1.setText(format(self.item.bid[0],','))
+        self.ui.label_bid5.setText(format(self.item.bid[4],'03.2f'))
+        self.ui.label_bid4.setText(format(self.item.bid[3],'03.2f'))
+        self.ui.label_bid3.setText(format(self.item.bid[2],'03.2f'))
+        self.ui.label_bid2.setText(format(self.item.bid[1],'03.2f'))
+        self.ui.label_bid1.setText(format(self.item.bid[0],'03.2f'))
 
         '''
-        self.ui.label_bid_v10.setText(format(self.item.bidvol[9],','))
-        self.ui.label_bid_v9.setText(format(self.item.bidvol[8],','))
-        self.ui.label_bid_v8.setText(format(self.item.bidvol[7],','))
-        self.ui.label_bid_v7.setText(format(self.item.bidvol[6],','))
-        self.ui.label_bid_v6.setText(format(self.item.bidvol[5],','))
+        self.ui.label_bid_v10.setText(format(self.item.bidvol[9],'03.2f'))
+        self.ui.label_bid_v9.setText(format(self.item.bidvol[8],'03.2f'))
+        self.ui.label_bid_v8.setText(format(self.item.bidvol[7],'03.2f'))
+        self.ui.label_bid_v7.setText(format(self.item.bidvol[6],'03.2f'))
+        self.ui.label_bid_v6.setText(format(self.item.bidvol[5],'03.2f'))
         '''
         self.ui.label_bid_v5.setText(format(self.item.bidvol[4],','))
         self.ui.label_bid_v4.setText(format(self.item.bidvol[3],','))
@@ -335,20 +335,20 @@ class WindowClass(QMainWindow) :
         cur = self.item.cur
         diff = self.item.diff
         diffp = self.item.diffp
-        if (self.item.exFlag == ord('1')):  # 동시호가 시간 (예상체결)
+        if (self.item.exFlag != 40):  # 동시호가 시간 (예상체결)
             cur = self.item.expcur
             diff = self.item.expdiff
             diffp = self.item.expdiffp
 
 
-        strcur = format(cur, ',')
-        if (self.item.exFlag == ord('1')):  # 동시호가 시간 (예상체결)
+        strcur = format(cur, '03.2f')
+        if (self.item.exFlag != 40):  # 동시호가 시간 (예상체결)
             strcur = "*" + strcur
 
         curcolor = self.item.getCurColor()
         self.ui.label_cur.setStyleSheet(curcolor)
         self.ui.label_cur.setText(strcur)
-        strdiff = str(diff) + "  " + format(diffp, '.2f')
+        strdiff = format(diff,'03.2f') + "  " + format(diffp, '.2f')
         strdiff += "%"
         self.ui.label_diff.setText(strdiff)
         self.ui.label_diff.setStyleSheet(curcolor)
