@@ -12,7 +12,7 @@ g_objCpTrade = win32com.client.Dispatch("CpTrade.CpTdUtil")
 # 현재가 정보 저장 구조체
 class stockPricedData:
     def __init__(self):
-        self.dicEx = {ord('0'): "동시호가/장중 아님", ord('1'): "동시호가", ord('2'): "장중"}
+        self.dicEx = {10: "시가단일가", 11: "시가단일가연장", 20: "장중단일가", 21:"장중단일가연장", 30:"종가단일가", 40:"장중"}
         self.code = ""
         self.name = ""
         self.cur = 0        # 현재가
@@ -28,7 +28,7 @@ class stockPricedData:
         self.baseprice = 0      # 기준가
 
         # 예상체결가 정보
-        self.exFlag= ord('2')
+        self.exFlag= 40
         self.expcur = 0         # 예상체결가
         self.expdiff = 0        # 예상 대비
         self.expdiffp = 0       # 예상 대비율
@@ -77,16 +77,19 @@ class stockPricedData:
 
 # CpEvent: 실시간 이벤트 수신 클래스
 class CpEvent:
+    '''
+    CpEvent Coding
+    '''
     def set_params(self, client, name, rpMst, parent):
         self.client = client  # CP 실시간 통신 object
         self.name = name  # 서비스가 다른 이벤트를 구분하기 위한 이름
         self.parent = parent  # callback 을 위해 보관
         self.rpMst = rpMst
 
-
-
-    # PLUS 로 부터 실제로 시세를 수신 받는 이벤트 핸들러
     def OnReceived(self):
+        '''
+        PLUS로 부터 실제로 시세를 수신받는 이벤트 핸들러
+        '''
         if self.name == "futurecur":
             # 현재가 체결 데이터 실시간 업데이트
             self.rpMst.exFlag = self.client.GetHeaderValue(28)  # 예상체결 플래그
@@ -224,13 +227,14 @@ class CpRPCurrentPrice:
 
 #UI파일 연결
 #단, UI파일은 Python 코드 파일과 같은 디렉토리에 위치해야한다.
-form_class = uic.loadUiType("pytrainer.ui")[0]
+#form_class = uic.loadUiType("pytrainer.ui")[0]
 
 #화면을 띄우는데 사용되는 Class 선언
-class WindowClass(QMainWindow) :
+class WindowClass(QMainWindow):
     def __init__(self) :
         super().__init__()
         self.ui = uic.loadUi("pytrainer.ui", self)
+        self.setWindowTitle("PyTrainer Demo")
         #self.ui.show()
         self.objMst = CpRPCurrentPrice()
         self.item = stockPricedData()
@@ -280,57 +284,29 @@ class WindowClass(QMainWindow) :
         self.displyHoga()
 
     def displyHoga(self):
-        '''
-        self.ui.label_offer10.setText(format(self.item.offer[9],'03.2f'))
-        self.ui.label_offer9.setText(format(self.item.offer[8],'03.2f'))
-        self.ui.label_offer8.setText(format(self.item.offer[7],'03.2f'))
-        self.ui.label_offer7.setText(format(self.item.offer[6],'03.2f'))
-        self.ui.label_offer6.setText(format(self.item.offer[5],'03.2f'))
-        '''
         self.ui.label_offer5.setText(format(self.item.offer[4],'03.2f'))
         self.ui.label_offer4.setText(format(self.item.offer[3],'03.2f'))
         self.ui.label_offer3.setText(format(self.item.offer[2],'03.2f'))
         self.ui.label_offer2.setText(format(self.item.offer[1],'03.2f'))
         self.ui.label_offer1.setText(format(self.item.offer[0],'03.2f'))
 
-        '''
-        self.ui.label_offer_v10.setText(format(self.item.offervol[9],'03.2f'))
-        self.ui.label_offer_v9.setText(format(self.item.offervol[8],'03.2f'))
-        self.ui.label_offer_v8.setText(format(self.item.offervol[7],'03.2f'))
-        self.ui.label_offer_v7.setText(format(self.item.offervol[6],'03.2f'))
-        self.ui.label_offer_v6.setText(format(self.item.offervol[5],'03.2f'))
-        '''
         self.ui.label_offer_v5.setText(format(self.item.offervol[4],','))
         self.ui.label_offer_v4.setText(format(self.item.offervol[3],','))
         self.ui.label_offer_v3.setText(format(self.item.offervol[2],','))
         self.ui.label_offer_v2.setText(format(self.item.offervol[1],','))
         self.ui.label_offer_v1.setText(format(self.item.offervol[0],','))
 
-        '''
-        self.ui.label_bid10.setText(format(self.item.bid[9],'03.2f'))
-        self.ui.label_bid9.setText(format(self.item.bid[8],'03.2f'))
-        self.ui.label_bid8.setText(format(self.item.bid[7],'03.2f'))
-        self.ui.label_bid7.setText(format(self.item.bid[6],'03.2f'))
-        self.ui.label_bid6.setText(format(self.item.bid[5],'03.2f'))
-        '''
         self.ui.label_bid5.setText(format(self.item.bid[4],'03.2f'))
         self.ui.label_bid4.setText(format(self.item.bid[3],'03.2f'))
         self.ui.label_bid3.setText(format(self.item.bid[2],'03.2f'))
         self.ui.label_bid2.setText(format(self.item.bid[1],'03.2f'))
         self.ui.label_bid1.setText(format(self.item.bid[0],'03.2f'))
 
-        '''
-        self.ui.label_bid_v10.setText(format(self.item.bidvol[9],'03.2f'))
-        self.ui.label_bid_v9.setText(format(self.item.bidvol[8],'03.2f'))
-        self.ui.label_bid_v8.setText(format(self.item.bidvol[7],'03.2f'))
-        self.ui.label_bid_v7.setText(format(self.item.bidvol[6],'03.2f'))
-        self.ui.label_bid_v6.setText(format(self.item.bidvol[5],'03.2f'))
-        '''
-        self.ui.label_bid_v5.setText(format(self.item.bidvol[4],','))
-        self.ui.label_bid_v4.setText(format(self.item.bidvol[3],','))
-        self.ui.label_bid_v3.setText(format(self.item.bidvol[2],','))
-        self.ui.label_bid_v2.setText(format(self.item.bidvol[1],','))
-        self.ui.label_bid_v1.setText(format(self.item.bidvol[0],','))
+        self.ui.label_bid_v5.setText(format(self.item.bidvol[4], ','))
+        self.ui.label_bid_v4.setText(format(self.item.bidvol[3], ','))
+        self.ui.label_bid_v3.setText(format(self.item.bidvol[2], ','))
+        self.ui.label_bid_v2.setText(format(self.item.bidvol[1], ','))
+        self.ui.label_bid_v1.setText(format(self.item.bidvol[0], ','))
 
         cur = self.item.cur
         diff = self.item.diff
@@ -348,20 +324,20 @@ class WindowClass(QMainWindow) :
         curcolor = self.item.getCurColor()
         self.ui.label_cur.setStyleSheet(curcolor)
         self.ui.label_cur.setText(strcur)
-        strdiff = format(diff,'03.2f') + "  " + format(diffp, '.2f')
+        strdiff = format(diff, '03.2f') + "  " + format(diffp, '.2f')
         strdiff += "%"
         self.ui.label_diff.setText(strdiff)
         self.ui.label_diff.setStyleSheet(curcolor)
 
-        self.ui.label_totoffer.setText(format(self.item.totOffer,','))
-        self.ui.label_totbid.setText(format(self.item.totBid,','))
+        self.ui.label_totoffer.setText(format(self.item.totOffer, ','))
+        self.ui.label_totbid.setText(format(self.item.totBid, ','))
 
-if __name__ == "__main__" :
+if __name__ == "__main__":
     #QApplication : 프로그램을 실행시켜주는 클래스
-    app = QApplication(sys.argv) 
+    app = QApplication(sys.argv)
 
     #WindowClass의 인스턴스 생성
-    myWindow = WindowClass() 
+    myWindow = WindowClass()
 
     #프로그램 화면을 보여주는 코드
     myWindow.show()
