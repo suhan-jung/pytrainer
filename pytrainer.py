@@ -1,13 +1,36 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QMainWindow
+from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem
 from PyQt5 import uic
-from PyQt5.QtCore import pyqtSlot
+from PyQt5.QtCore import pyqtSlot, Qt, QAbstractTableModel
 import win32com.client
+import ctypes
 
 # cp object
 g_objCodeMgr = win32com.client.Dispatch("CpUtil.CpCodeMgr")
 g_objCpStatus = win32com.client.Dispatch("CpUtil.CpCybos")
 g_objCpTrade = win32com.client.Dispatch("CpTrade.CpTdUtil")
+g_objFutureMgr = win32com.client.Dispatch("CpUtil.CpFutureCode")
+
+def InitPlusCheck():
+    # 프로세스가 관리자 권한으로 실행 여부
+    if ctypes.windll.shell32.IsUserAnAdmin():
+        print('정상: 관리자권한으로 실행된 프로세스입니다.')
+    else:
+        print('오류: 일반권한으로 실행됨. 관리자 권한으로 실행해 주세요')
+        return False
+
+    # 연결 여부 체크
+    if g_objCpStatus.IsConnect == 0:
+        print("PLUS가 정상적으로 연결되지 않음. ")
+        return False
+
+    # 주문 관련 초기화
+    ret = g_objCpTrade.TradeInit(0)
+    if ret != 0:
+        print("주문 초기화 실패, 오류번호 ", ret)
+        return False
+ 
+    return True
 
 # 현재가 정보 저장 구조체
 class stockPricedData:
@@ -157,19 +180,27 @@ class CpPublish:
             self.obj.Unsubscribe()
         self.bIsSB = False
 
-# CpPBStockCur: 실시간 현재가 요청 클래스
 class CpPBStockCur(CpPublish):
+    '''
+    CpPBStockCur: 실시간 현재가 요청 클래스
+    '''
     def __init__(self):
         super().__init__("futurecur", "DsCbo1.FutureCurOnly")
 
-# CpPBStockBid: 실시간 10차 호가 요청 클래스
+
 class CpPBStockBid(CpPublish):
+    '''
+    CpPBStockBid: 실시간 10차 호가 요청 클래스
+    '''
     def __init__(self):
         super().__init__("futurebid", "CpSysDib.FutureJpBid")
 
 
-# SB/PB 요청 ROOT 클래스
+
 class CpPBConnection:
+    '''
+    SB/PB 요청 ROOT 클래스
+    '''
     def __init__(self):
         self.obj = win32com.client.Dispatch("CpUtil.CpCybos")
         handler = win32com.client.WithEvents(self.obj, CpEvent)
@@ -201,7 +232,7 @@ class CpRPCurrentPrice:
         # 수신 받은 현재가 정보를 rtMst 에 저장
         rtMst.code = code
         rtMst.name = g_objCodeMgr.CodeToName(code)
-        rtMst.cur = self.objStockMst.GetHeaderValue(22)  # 전일종가 11
+        rtMst.cur = self.objStockMst.GetHeaderValue(71)  # 현재가 11
         rtMst.diff = self.objStockMst.GetHeaderValue(77)  # 전일대비 12
         rtMst.baseprice = self.objStockMst.GetHeaderValue(13)  # 기준가 27
         rtMst.vol = self.objStockMst.GetHeaderValue(75)  # 거래량 18
@@ -225,6 +256,127 @@ class CpRPCurrentPrice:
         rtMst.objCur.Subscribe(code,rtMst, callbackobj)
         rtMst.objOfferbid.Subscribe(code,rtMst, callbackobj)
 
+# CpFutureBalance: 선물 잔고
+class CpFutureBalance:
+    def __init__(self):
+        self.objRq = win32com.client.Dispatch("CpTrade.CpTd0723")
+        self.acc = g_objCpTrade.AccountNumber[0]  # 계좌번호
+        self.accFlag = g_objCpTrade.GoodsList(self.acc, 2)  # 선물/옵션 계좌구분
+        print(self.acc, self.accFlag[0])
+ 
+    def request(self,  retList):
+        self.objRq.SetInputValue(0, self.acc)
+        self.objRq.SetInputValue(1, self.accFlag[0])
+        self.objRq.SetInputValue(4, 50)
+ 
+ 
+        while True:
+            self.objRq.BlockRequest()
+ 
+            rqStatus = self.objRq.GetDibStatus()
+            rqRet = self.objRq.GetDibMsg1()
+ 
+            if rqStatus != 0:
+                print("통신상태", rqStatus, rqRet)
+                return False
+ 
+            cnt = self.objRq.GetHeaderValue(2)
+ 
+            for i in range(cnt):
+                item = []
+                item.append(self.objRq.GetDataValue(0, i))
+                item.append(self.objRq.GetDataValue(1, i))
+                flag = self.objRq.GetDataValue(2, i)
+                if flag == '1':
+                    item.append('매도')
+                elif flag == '2':
+                    item.append('매수')
+ 
+                item.append(self.objRq.GetDataValue(3, i))
+                item.append(self.objRq.GetDataValue(5, i))
+                item.append(self.objRq.GetDataValue(9, i))
+ 
+                retList.append(item)
+            # end of for
+ 
+            if self.objRq.Continue == False :
+                break
+        # end of while
+ 
+        '''
+        for item in  retList:
+            data = ''
+            for key, value in item.items():
+                if (type(value) == float):
+                    data += '%s:%.2f' % (key, value)
+                elif (type(value) == str):
+                    data += '%s:%s' % (key, value)
+                elif (type(value) == int):
+                    data += '%s:%d' % (key, value)
+ 
+                data += ' '
+            print(data)
+        return True
+        '''
+ 
+# CpFutureNContract: 선물 미체결 조회
+class CpFutureNContract:
+    def __init__(self):
+        self.objRq = win32com.client.Dispatch("CpTrade.CpTd5371")
+        self.acc = g_objCpTrade.AccountNumber[0]  # 계좌번호
+        self.accFlag = g_objCpTrade.GoodsList(self.acc, 2)  # 선물/옵션 계좌구분
+        print(self.acc, self.accFlag[0])
+ 
+    def request(self,  retList):
+        self.objRq.SetInputValue(0, self.acc)
+        self.objRq.SetInputValue(1, self.accFlag[0])
+        self.objRq.SetInputValue(6, '3') # '3' : 미체결
+ 
+ 
+        while True:
+            self.objRq.BlockRequest()
+ 
+            rqStatus = self.objRq.GetDibStatus()
+            rqRet = self.objRq.GetDibMsg1()
+            if rqStatus != 0:
+                print("통신상태", rqStatus, rqRet)
+                return False
+ 
+            cnt = self.objRq.GetHeaderValue(6)
+ 
+            for i in range(cnt):
+                item = {}
+                item['주문번호'] = self.objRq.GetDataValue(2, i)
+                item['코드'] = self.objRq.GetDataValue(4, i)
+                item['종목명'] = self.objRq.GetDataValue(5, i)
+                item['주문가격'] = self.objRq.GetDataValue(8, i)
+                item['잔량'] = self.objRq.GetDataValue(9, i)
+                item['거래구분']= self.objRq.GetDataValue(6, i)
+ 
+                retList.append(item)
+            # end of for
+ 
+            if self.objRq.Continue == False :
+                break
+        # end of while
+ 
+ 
+        for item in  retList:
+            data = ''
+            for key, value in item.items():
+                if (type(value) == float):
+                    data += '%s:%.2f' % (key, value)
+                elif (type(value) == str):
+                    data += '%s:%s' % (key, value)
+                elif (type(value) == int):
+                    data += '%s:%d' % (key, value)
+ 
+                data += ' '
+            print(data)
+        return True
+
+
+
 #UI파일 연결
 #단, UI파일은 Python 코드 파일과 같은 디렉토리에 위치해야한다.
 #form_class = uic.loadUiType("pytrainer.ui")[0]
@@ -234,29 +386,101 @@ class WindowClass(QMainWindow):
     def __init__(self) :
         super().__init__()
         self.ui = uic.loadUi("pytrainer.ui", self)
-        self.setWindowTitle("PyTrainer Demo")
-        #self.ui.show()
-        self.objMst = CpRPCurrentPrice()
-        self.item = stockPricedData()
 
+        self.fcodelist = []
+ 
+        for i in range(g_objFutureMgr.GetCount()):
+            code = g_objFutureMgr.GetData(0, i)
+            name = g_objFutureMgr.GetData(1, i)
+            if (code[0] == '4') :   # spread skip
+                continue
+            if (code[0] == '10100') : #연결선물 skip
+                continue
+            self.fcodelist.append((code, name))
+        self.fcodelist.append(('165Q6', 'KTBF'))
+        self.fcodelist.append(('167Q6', 'LKTBF'))
+
+        # self.comboCodeList = QComboBox(self)
+        for code, name in self.fcodelist :
+            self.comboCodeList.addItem(code)
+ 
+        self.comboCodeList.currentIndexChanged.connect(self.OnComboChanged)
+
+        self.btnQuote.clicked.connect(self.btnQuote_Clicked)
+        self.btnRefresh.clicked.connect(self.btnRefresh_Clicked)
+
+        self.btnBuy0.clicked.connect(self.btnBuy0_Clicked)
+        self.btnBuy1.clicked.connect(self.btnBuy1_Clicked)
+        self.btnBuy2.clicked.connect(self.btnBuy2_Clicked)
+        self.btnBuy3.clicked.connect(self.btnBuy3_Clicked)
+
+        self.btnSell0.clicked.connect(self.btnSell0_Clicked)
+        self.btnSell1.clicked.connect(self.btnSell1_Clicked)
+        self.btnSell2.clicked.connect(self.btnSell2_Clicked)
+        self.btnSell3.clicked.connect(self.btnSell3_Clicked)
+
+        self.objMst = CpRPCurrentPrice()
+        self.objBal = CpFutureBalance()
+
+        self.item = stockPricedData()
         self.setCode("101Q6")
 
-    @pyqtSlot()
-    def slot_codeupdate(self):
-        code = self.ui.editCode.toPlainText()
+    def btnQuote_Clicked(self):
+        code = self.comboCodeList.currentText()
         self.setCode(code)
 
-    def slot_codechanged(self):
-        code = self.ui.editCode.toPlainText()
+    def OnComboChanged(self):
+        code = self.comboCodeList.currentText()
         self.setCode(code)
+    
+    def btnRefresh_Clicked(self):
+        retList = []
+        self.objBal.request(retList)
 
-    def accept(self):
-        exit()
-        return
+        item_count = len(retList)
+        self.tableBalance.setRowCount(item_count)
+        for i in range(item_count):
+            row = retList[i]
+            for j in range(len(row)):
+                wgtItem = QTableWidgetItem(str(row[j]))
+                wgtItem.setTextAlignment(Qt.AlignVCenter | Qt.AlignRight)
+                self.tableBalance.setItem(i, j, wgtItem)
+        self.tableBalance.resizeColumnsToContents()
 
-    def reject(self):
-        exit()
-        return
+    def btnBuy0_Clicked(self):
+        # 현재가 조회 > 매수 1주 주문
+        code = self.comboCodeList.currentText()
+        objFutureMst = CpFutureMst()
+        retItem = {}
+        objFutureMst.request(code, retItem)
+ 
+        objOrder = CpFutureOrder()
+        price = retItem['현재가']
+        retOrder = {}
+        objOrder.buyOrder(code, price, 1, retOrder)
+ 
+        print(retOrder)
+
+    def btnBuy1_Clicked(self):
+        pass
+
+    def btnBuy2_Clicked(self):
+        pass
+
+    def btnBuy3_Clicked(self):
+        pass
+
+    def btnSell0_Clicked(self):
+        pass
+
+    def btnSell1_Clicked(self):
+        pass
+
+    def btnSell2_Clicked(self):
+        pass
+
+    def btnSell3_Clicked(self):
+        pass
 
     def monitorPriceChange(self):
         self.displyHoga()
@@ -333,14 +557,10 @@ class WindowClass(QMainWindow):
         self.ui.label_totbid.setText(format(self.item.totBid, ','))
 
 if __name__ == "__main__":
+    if False == InitPlusCheck() :
+        exit()
     #QApplication : 프로그램을 실행시켜주는 클래스
     app = QApplication(sys.argv)
-
-    #WindowClass의 인스턴스 생성
     myWindow = WindowClass()
-
-    #프로그램 화면을 보여주는 코드
     myWindow.show()
-
-    #프로그램을 이벤트루프로 진입시키는(프로그램을 작동시키는) 코드
     app.exec_()

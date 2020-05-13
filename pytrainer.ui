@@ -6,28 +6,18 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>592</height>
+    <width>1220</width>
+    <height>666</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>PyTrainer for Futures</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QTextEdit" name="editCode">
+   <widget class="QPushButton" name="btnQuote">
     <property name="geometry">
      <rect>
-      <x>20</x>
-      <y>10</y>
-      <width>91</width>
-      <height>21</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="pushButton">
-    <property name="geometry">
-     <rect>
-      <x>120</x>
+      <x>150</x>
       <y>10</y>
       <width>51</width>
       <height>21</height>
@@ -40,7 +30,7 @@
    <widget class="QLabel" name="label_name">
     <property name="geometry">
      <rect>
-      <x>180</x>
+      <x>210</x>
       <y>14</y>
       <width>131</width>
       <height>16</height>
@@ -50,24 +40,11 @@
      <string>종목명</string>
     </property>
    </widget>
-   <widget class="QDialogButtonBox" name="buttonBox">
-    <property name="geometry">
-     <rect>
-      <x>80</x>
-      <y>520</y>
-      <width>156</width>
-      <height>23</height>
-     </rect>
-    </property>
-    <property name="standardButtons">
-     <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-    </property>
-   </widget>
    <widget class="QLabel" name="label_totbid">
     <property name="geometry">
      <rect>
-      <x>215</x>
-      <y>290</y>
+      <x>335</x>
+      <y>300</y>
       <width>56</width>
       <height>12</height>
      </rect>
@@ -82,10 +59,10 @@
    <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
-      <x>110</x>
-      <y>50</y>
+      <x>230</x>
+      <y>60</y>
       <width>81</width>
-      <height>221</height>
+      <height>231</height>
      </rect>
     </property>
     <layout class="QVBoxLayout" name="verticalLayout">
@@ -213,34 +190,12 @@
      </item>
     </layout>
    </widget>
-   <widget class="QLabel" name="label_diff">
-    <property name="geometry">
-     <rect>
-      <x>190</x>
-      <y>153</y>
-      <width>91</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <weight>75</weight>
-      <bold>true</bold>
-     </font>
-    </property>
-    <property name="text">
-     <string>대비</string>
-    </property>
-    <property name="alignment">
-     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-    </property>
-   </widget>
    <widget class="QWidget" name="layoutWidget_2">
     <property name="geometry">
      <rect>
-      <x>30</x>
-      <y>50</y>
-      <width>68</width>
+      <x>150</x>
+      <y>60</y>
+      <width>71</width>
       <height>101</height>
      </rect>
     </property>
@@ -306,8 +261,8 @@
    <widget class="QWidget" name="layoutWidget_3">
     <property name="geometry">
      <rect>
-      <x>200</x>
-      <y>173</y>
+      <x>320</x>
+      <y>190</y>
       <width>71</width>
       <height>101</height>
      </rect>
@@ -371,8 +326,8 @@
    <widget class="QLabel" name="label_totoffer">
     <property name="geometry">
      <rect>
-      <x>40</x>
-      <y>290</y>
+      <x>160</x>
+      <y>300</y>
       <width>56</width>
       <height>12</height>
      </rect>
@@ -384,13 +339,346 @@
      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
     </property>
    </widget>
+   <widget class="QComboBox" name="comboCodeList">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>10</y>
+      <width>101</width>
+      <height>22</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QTableWidget" name="tableBalance">
+    <property name="geometry">
+     <rect>
+      <x>590</x>
+      <y>40</y>
+      <width>611</width>
+      <height>131</height>
+     </rect>
+    </property>
+    <property name="rowCount">
+     <number>0</number>
+    </property>
+    <property name="columnCount">
+     <number>6</number>
+    </property>
+    <column>
+     <property name="text">
+      <string>코드</string>
+     </property>
+    </column>
+    <column>
+     <property name="text">
+      <string>종목명</string>
+     </property>
+    </column>
+    <column>
+     <property name="text">
+      <string>잔고구분</string>
+     </property>
+    </column>
+    <column>
+     <property name="text">
+      <string>잔고수량</string>
+     </property>
+    </column>
+    <column>
+     <property name="text">
+      <string>평균단가</string>
+     </property>
+    </column>
+    <column>
+     <property name="text">
+      <string>청산가능수량</string>
+     </property>
+    </column>
+   </widget>
+   <widget class="QLabel" name="label">
+    <property name="geometry">
+     <rect>
+      <x>590</x>
+      <y>20</y>
+      <width>56</width>
+      <height>12</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>잔고</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="btnRefresh">
+    <property name="geometry">
+     <rect>
+      <x>1130</x>
+      <y>580</y>
+      <width>75</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>조회</string>
+    </property>
+   </widget>
+   <widget class="QTableWidget" name="tableWidget_2">
+    <property name="geometry">
+     <rect>
+      <x>590</x>
+      <y>210</y>
+      <width>611</width>
+      <height>161</height>
+     </rect>
+    </property>
+    <column>
+     <property name="text">
+      <string>주문번호</string>
+     </property>
+    </column>
+    <column>
+     <property name="text">
+      <string>코드</string>
+     </property>
+    </column>
+    <column>
+     <property name="text">
+      <string>종목명</string>
+     </property>
+    </column>
+    <column>
+     <property name="text">
+      <string>주문가격</string>
+     </property>
+    </column>
+    <column>
+     <property name="text">
+      <string>거래구분</string>
+     </property>
+    </column>
+   </widget>
+   <widget class="QLabel" name="label_2">
+    <property name="geometry">
+     <rect>
+      <x>590</x>
+      <y>190</y>
+      <width>56</width>
+      <height>12</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>미체결</string>
+    </property>
+   </widget>
+   <widget class="QGroupBox" name="groupBox_2">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>40</y>
+      <width>511</width>
+      <height>531</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>시세 및 거래</string>
+    </property>
+    <widget class="QPushButton" name="btnBuy0">
+     <property name="geometry">
+      <rect>
+       <x>280</x>
+       <y>340</y>
+       <width>75</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>시장가</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="btnBuy1">
+     <property name="geometry">
+      <rect>
+       <x>280</x>
+       <y>380</y>
+       <width>75</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>1우선</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="btnBuy2">
+     <property name="geometry">
+      <rect>
+       <x>280</x>
+       <y>410</y>
+       <width>75</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>2우선</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="btnBuy3">
+     <property name="geometry">
+      <rect>
+       <x>280</x>
+       <y>440</y>
+       <width>75</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>3우선</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="btnSell2">
+     <property name="geometry">
+      <rect>
+       <x>160</x>
+       <y>320</y>
+       <width>75</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>2우선</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="btnSell1">
+     <property name="geometry">
+      <rect>
+       <x>160</x>
+       <y>350</y>
+       <width>75</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>1우선</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="btnSell3">
+     <property name="geometry">
+      <rect>
+       <x>160</x>
+       <y>290</y>
+       <width>75</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>3우선</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="btnSell0">
+     <property name="geometry">
+      <rect>
+       <x>160</x>
+       <y>390</y>
+       <width>75</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>시장가</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_diff">
+     <property name="geometry">
+      <rect>
+       <x>310</x>
+       <y>130</y>
+       <width>101</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>대비</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QLabel" name="label_3">
+    <property name="geometry">
+     <rect>
+      <x>590</x>
+      <y>390</y>
+      <width>56</width>
+      <height>12</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>금일거래</string>
+    </property>
+   </widget>
+   <widget class="QTableWidget" name="tableWidget_3">
+    <property name="geometry">
+     <rect>
+      <x>590</x>
+      <y>410</y>
+      <width>611</width>
+      <height>161</height>
+     </rect>
+    </property>
+    <column>
+     <property name="text">
+      <string>주문번호</string>
+     </property>
+    </column>
+    <column>
+     <property name="text">
+      <string>코드</string>
+     </property>
+    </column>
+    <column>
+     <property name="text">
+      <string>종목명</string>
+     </property>
+    </column>
+    <column>
+     <property name="text">
+      <string>주문가격</string>
+     </property>
+    </column>
+    <column>
+     <property name="text">
+      <string>거래구분</string>
+     </property>
+    </column>
+   </widget>
+   <zorder>groupBox_2</zorder>
+   <zorder>btnQuote</zorder>
+   <zorder>label_name</zorder>
+   <zorder>label_totbid</zorder>
+   <zorder>layoutWidget</zorder>
+   <zorder>layoutWidget_2</zorder>
+   <zorder>layoutWidget_3</zorder>
+   <zorder>label_totoffer</zorder>
+   <zorder>comboCodeList</zorder>
+   <zorder>tableBalance</zorder>
+   <zorder>label</zorder>
+   <zorder>btnRefresh</zorder>
+   <zorder>tableWidget_2</zorder>
+   <zorder>label_2</zorder>
+   <zorder>label_3</zorder>
+   <zorder>tableWidget_3</zorder>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
+     <width>1220</width>
      <height>21</height>
     </rect>
    </property>
@@ -398,72 +686,7 @@
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
  <resources/>
- <connections>
-  <connection>
-   <sender>editCode</sender>
-   <signal>textChanged()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>slot_codeupdate()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>112</x>
-     <y>43</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>511</x>
-     <y>122</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>buttonBox</sender>
-   <signal>accepted()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>accept()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>132</x>
-     <y>549</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>522</x>
-     <y>549</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>buttonBox</sender>
-   <signal>rejected()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>reject()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>141</x>
-     <y>552</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>609</x>
-     <y>535</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>pushButton</sender>
-   <signal>clicked()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>slot_codechanged()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>178</x>
-     <y>45</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>432</x>
-     <y>34</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
  <slots>
   <slot>slot_codeupdate()</slot>
   <slot>accept()</slot>
